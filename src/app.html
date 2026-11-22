@@ -188,7 +188,7 @@ input[type="range"] { width: 100%; height: 36px; accent-color: var(--accent); }
 
   <details class="howto" id="howto" open>
     <summary>How to play</summary>
-    <p class="instructions">Each round uses one of four modes, picked at random: Meaning → Kanji, Kanji → Meaning, Kanji → Reading or Reading → Kanji. Press Start for a new round. Each round has a set of words, shown a few at a time. Pick one on the left, then its match on the right. As soon as you pick both, the next word takes its place and the choices reshuffle. Every answer is listed under the board. A word you miss comes back later in the same round, so the round ends only when you have matched every word. Keyboard: number keys pick on the left, letter keys pick on the right.</p>
+    <p class="instructions">Each round uses one of four modes, picked at random: Meaning → Kanji, Kanji → Meaning, Kanji → Reading or Reading → Kanji. You can choose which modes are used in Settings. Press Start for a new round. Each round has a set of words, shown a few at a time. Pick one on the left, then its match on the right. As soon as you pick both, the next word takes its place and the choices reshuffle. Every answer is listed under the board. A word you miss comes back later in the same round, so the round ends only when you have matched every word. Keyboard: number keys pick on the left, letter keys pick on the right.</p>
   </details>
 
   <div class="roundbar" id="roundbar">
@@ -270,6 +270,16 @@ input[type="range"] { width: 100%; height: 36px; accent-color: var(--accent); }
           </div>
           <p class="hint">Extra choices stop you from finding the last answer by elimination. Changes apply when you press Start.</p>
           <div class="chk"><label><input type="checkbox" id="alike"> Use look-alike kanji for the extras (like 木 and 本, 人 and 入)</label></div>
+        </div>
+        <div class="field">
+          <span class="lbl" id="modesLbl">Modes to practise</span>
+          <div class="row chk" role="group" aria-labelledby="modesLbl" id="modeChecks">
+            <label><input type="checkbox" id="m-en2kj" value="en2kj"> Meaning → Kanji</label>
+            <label><input type="checkbox" id="m-kj2en" value="kj2en"> Kanji → Meaning</label>
+            <label><input type="checkbox" id="m-kj2kana" value="kj2kana"> Kanji → Reading</label>
+            <label><input type="checkbox" id="m-kana2kj" value="kana2kj"> Reading → Kanji</label>
+          </div>
+          <p class="hint">Each round picks one of the ticked modes at random. Keep at least one ticked. Changes apply when you press Start.</p>
         </div>
         <div class="field">
           <span class="lbl" id="lvlLbl">Kanji sets</span>
@@ -652,7 +662,7 @@ const store = {
 const DEFAULTS = {
   kj: 112, en: 28, font: "klee", mode: "en2kj", roundSize: 10, pairs: 4,
   extra: 4,
-  alike: true, levels: ["N5"], speak: false
+  alike: true, levels: ["N5"], speak: false, modes: ["en2kj", "kj2en", "kj2kana", "kana2kj"]
 };
 const saved = store.get("ks-settings", {});
 const settings = Object.assign({}, DEFAULTS, saved);
@@ -707,7 +717,10 @@ function pickRound(n) {
 }
 function startRound() {
   // Pick this round's mode at random, never the same one twice in a row.
-  const others = Object.keys(MODES).filter(k => k !== settings.mode);
+  // Pick from the ticked modes, avoiding a repeat when there is more than one.
+  const allowed = (settings.modes || []).filter(k => MODES[k]);
+  const list = allowed.length ? allowed : Object.keys(MODES);
+  const others = list.length > 1 ? list.filter(k => k !== settings.mode) : list;
   settings.mode = others[Math.floor(Math.random() * others.length)];
   save();
   const words = pickRound(settings.roundSize);
@@ -986,6 +999,15 @@ function initControls() {
   document.querySelectorAll('input[name="extra"]').forEach(inp => inp.addEventListener("change", () => {
     settings.extra = +inp.value; save();
   }));
+  const modeBoxes = [...document.querySelectorAll("#modeChecks input")];
+  modeBoxes.forEach(inp => {
+    inp.checked = settings.modes.includes(inp.value);
+    inp.addEventListener("change", () => {
+      const on = modeBoxes.filter(b => b.checked).map(b => b.value);
+      if (!on.length) { inp.checked = true; return; }
+      settings.modes = on; save();
+    });
+  });
   ["lvlN5", "lvlN4"].forEach(id => {
     const inp = $(id);
     inp.checked = settings.levels.includes(inp.value);
