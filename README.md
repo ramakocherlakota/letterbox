@@ -16,6 +16,8 @@ It started as Kanji Shuffle and now covers:
   and the choices reshuffle. A missed word comes back later in the same round.
 - Extra choices are look-alikes (木/本, シ/ツ, ఇ/ఈ), so you can't win by elimination. Items that share
   a reading or meaning are never on the board together.
+- **Study sheet** (button at the top): every character in the current writing system — the kana table,
+  the Telugu vowels with how to say them, or the kanji list. Tap one to see it large, hear it or drill it.
 - Every answer is listed under the board. Tap a missed one, or anything under **Needs practice**,
   to **drill** it: five quick questions on that one character, with four look-alike choices.
   A perfect drill takes it off the practice list.

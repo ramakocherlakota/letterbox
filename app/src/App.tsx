@@ -10,6 +10,7 @@ import { loadFlag, loadProgress, loadSettings, saveFlag, saveProgress, saveSetti
 import { Chip, History, Tile, TwoStepButton } from "./components/Bits";
 import { ReviewPanel, SettingsPanel } from "./components/Panels";
 import { Drill, DRILL_KEYS, DRILL_LENGTH, type DrillState } from "./components/Drill";
+import { Chart } from "./components/Chart";
 
 const KEYS = "ABCDEFGHIJKL";
 const FONTS = {
@@ -72,6 +73,7 @@ export default function App() {
   const [progress, setProgressState] = useState(() => loadProgress(settings.deck));
   const [game, setGame] = useState(() => newGame(deck, similar, settings, progress));
   const [drill, setDrill] = useState<DrillState | null>(null);
+  const [view, setView] = useState<"play" | "chart">("play");
   const [status, setStatus] = useState("");
   const [howtoOpen, setHowtoOpen] = useState(() => loadFlag("lb-howto-open", true));
   const readyAt = useRef(0);
@@ -98,6 +100,7 @@ export default function App() {
     const s = settingsOverride ?? settings;
     setGame(newGame(d, d === deck ? similar : buildSimilar(d), s, p, d === deck ? game.round.mode : undefined));
     setDrill(null);
+    setView("play");
     readyAt.current = 0;
   }
 
@@ -158,6 +161,7 @@ export default function App() {
   function startDrill(itemId: string, originMode: string) {
     const m = drillMode(deck, originMode);
     setDrill({ itemId, mode: m, results: [], choices: drillChoices(itemId, m, []), verdict: null, anim: 0 });
+    setView("play");
     readyAt.current = 0;
     requestAnimationFrame(() => {
       const h = document.getElementById("drillHead");
@@ -198,6 +202,7 @@ export default function App() {
     if (e.metaKey || e.ctrlKey || e.altKey) return;
     const t = e.target as HTMLElement | null;
     if (t && (["INPUT", "TEXTAREA", "SELECT", "SUMMARY"].includes(t.tagName) || (t.tagName === "BUTTON" && !t.classList.contains("card")))) return;
+    if (view === "chart") return;
     if (drill) {
       if (drill.results.length >= DRILL_LENGTH) {
         if (e.key === "Enter") { e.preventDefault(); startDrill(drill.itemId, drill.mode.id); }
@@ -239,6 +244,10 @@ export default function App() {
             {DECKS.map(d => <option key={d.id} value={d.id}>{d.name} ({d.native})</option>)}
           </select>
           <button className="btn-big" type="button" id="startBtn" onClick={() => start()}>Start</button>
+          <button className="btn" type="button" id="sheetBtn" aria-pressed={view === "chart"}
+            onClick={() => setView(view === "chart" ? "play" : "chart")}>
+            {view === "chart" ? "Back to practice" : "Study sheet"}
+          </button>
           <TwoStepButton label="Reset rounds" armedLabel="Tap again to reset" onConfirm={resetRounds} />
         </div>
       </header>
@@ -256,7 +265,9 @@ export default function App() {
         </p>
       </details>
 
-      {drill ? (
+      {view === "chart" ? (
+        <Chart deck={deck} byId={byId} onDrill={id => startDrill(id, game.round.mode)} onSpeak={x => speak(x.speak, deck.lang)} />
+      ) : drill ? (
         <Drill deck={deck} byId={byId} drill={drill} onPick={drillPick}
           onAgain={() => startDrill(drill.itemId, drill.mode.id)} onBack={() => setDrill(null)} />
       ) : (

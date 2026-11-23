@@ -55,6 +55,7 @@ export function Drill(props: {
               <Tile key={id} kind={choice.kind} lang={deck.lang} keyLabel={DRILL_KEYS[i]} text={face(byId[id], drill.mode.choice)} onPick={() => props.onPick(id)} />
             ))}
           </div>
+          <div className="row"><button type="button" className="btn" onClick={props.onBack}>Stop drill</button></div>
         </>
       ) : (
         <>

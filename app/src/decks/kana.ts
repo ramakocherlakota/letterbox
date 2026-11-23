@@ -118,5 +118,39 @@ export const kana: Deck = {
       "シツソンノ", "クケタワウフ", "ラフヲウ", "スヌフ", "チテナ", "コユヨロ", "アマヤム", "エユニ"
     ]
   },
+  chart: {
+    main: "hira",
+    second: "kata",
+    label: "sound",
+    columns: ["a", "i", "u", "e", "o"],
+    groups: [
+      {
+        title: "Basic kana (hiragana and katakana)",
+        rows: [
+          { label: "", cells: ["あ", "い", "う", "え", "お"] },
+          { label: "k", cells: ["か", "き", "く", "け", "こ"] },
+          { label: "s", cells: ["さ", "し", "す", "せ", "そ"] },
+          { label: "t", cells: ["た", "ち", "つ", "て", "と"] },
+          { label: "n", cells: ["な", "に", "ぬ", "ね", "の"] },
+          { label: "h", cells: ["は", "ひ", "ふ", "へ", "ほ"] },
+          { label: "m", cells: ["ま", "み", "む", "め", "も"] },
+          { label: "y", cells: ["や", null, "ゆ", null, "よ"] },
+          { label: "r", cells: ["ら", "り", "る", "れ", "ろ"] },
+          { label: "w", cells: ["わ", null, null, null, "を"] },
+          { label: "n", cells: ["ん", null, null, null, null] }
+        ]
+      },
+      {
+        title: "With ゛ and ゜ (voiced)",
+        rows: [
+          { label: "g", cells: ["が", "ぎ", "ぐ", "げ", "ご"] },
+          { label: "z", cells: ["ざ", "じ", "ず", "ぜ", "ぞ"] },
+          { label: "d", cells: ["だ", "ぢ", "づ", "で", "ど"] },
+          { label: "b", cells: ["ば", "び", "ぶ", "べ", "ぼ"] },
+          { label: "p", cells: ["ぱ", "ぴ", "ぷ", "ぺ", "ぽ"] }
+        ]
+      }
+    ]
+  },
   describe: x => ({ big: x.values.hira, title: `${x.values.hira} ${x.values.kata}`, sub: `sounds like “${x.values.sound}”` })
 };

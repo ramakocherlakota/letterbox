@@ -49,6 +49,14 @@ export interface Deck {
    *  A string group is split into single characters; use an array for multi-character values. */
   lookalikes: Record<string, (string | string[])[]>;
   describe: (item: Item) => Description;
+  /** Optional table layout for the study sheet (e.g. the kana table). Cells are item ids. */
+  chart?: {
+    main: string;    // field shown large in each cell
+    second?: string; // field shown smaller beside it
+    label: string;   // field shown underneath
+    columns: string[];
+    groups: { title: string; rows: { label: string; cells: (string | null)[] }[] }[];
+  };
 }
 
 /** Leitner-style record for one item in one mode. Box 0 = just missed, 5 = well known. */

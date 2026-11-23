@@ -82,3 +82,14 @@ describe("look-alikes", () => {
     expect(pool(kanji, ["N5", "N4"]).some(x => x.decoyOnly)).toBe(false);
   });
 });
+
+describe("study sheet tables", () => {
+  for (const deck of DECKS.filter(d => d.chart)) {
+    it(`${deck.name}: every cell is a real item and every item has a cell`, () => {
+      const ids = new Set(deck.items.map(x => x.id));
+      const cells = deck.chart!.groups.flatMap(g => g.rows.flatMap(r => r.cells)).filter((c): c is string => !!c);
+      for (const c of cells) expect(ids.has(c), c).toBe(true);
+      expect(new Set(cells)).toEqual(new Set(deck.items.filter(x => !x.decoyOnly).map(x => x.id)));
+    });
+  }
+});
