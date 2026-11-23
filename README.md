@@ -42,4 +42,4 @@ npm run build   # type-check, then write index.html (and artifact/letterbox.html
 
 Commit the rebuilt `index.html` along with source changes so the live site updates.
 
-Live version: https://ramakocherlakota.github.io/kanji-app/
+Live version: https://ramakocherlakota.github.io/letterbox/ (the old address, ramakocherlakota.github.io/kanji-app/, redirects here).
