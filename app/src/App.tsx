@@ -11,6 +11,7 @@ import { Chip, History, Tile, TwoStepButton } from "./components/Bits";
 import { ReviewPanel, SettingsPanel } from "./components/Panels";
 import { Drill, DRILL_KEYS, DRILL_LENGTH, type DrillState } from "./components/Drill";
 import { Chart } from "./components/Chart";
+import { speak as speakWith } from "./speech";
 
 const KEYS = "ABCDEFGHIJKL";
 const FONTS = {
@@ -24,7 +25,6 @@ const FONTS = {
     serif: '"Noto Serif Telugu", "Telugu MN", "Nirmala UI", serif'
   }
 } as const;
-const SPEECH_LANG: Record<string, string> = { ja: "ja-JP", te: "te-IN" };
 
 interface Entry { key: number; id: string; picked: string; ok: boolean; mode: string }
 
@@ -47,16 +47,6 @@ function newGame(deck: Deck, similar: Similar, settings: Settings, progress: Dec
   return { ...filled, sel: { p: null, c: null }, log: [], done: false, anim: 0 };
 }
 
-function speak(text: string | undefined, lang: string) {
-  if (!text || !("speechSynthesis" in window)) return;
-  try {
-    speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = SPEECH_LANG[lang] ?? lang;
-    u.rate = 0.8;
-    speechSynthesis.speak(u);
-  } catch { /* speech unavailable */ }
-}
 
 /** "You picked …" for a wrong answer, naming what the picked choice actually is. */
 function describePick(deck: Deck, mode: Mode, p: Item): string {
@@ -82,6 +72,7 @@ export default function App() {
   const ds = settings.decks[deck.id];
   const mode = deck.modes.find(m => m.id === game.round.mode)!;
 
+  const speak = (text: string | undefined, lang: string) => speakWith(text, lang, settings.voices[lang], settings.speechRate);
   const setSettings = (s: Settings) => { setSettingsState(s); saveSettings(s); };
   const setProgress = (p: DeckProgress, deckId = deck.id) => { setProgressState(p); saveProgress(deckId, p); };
 

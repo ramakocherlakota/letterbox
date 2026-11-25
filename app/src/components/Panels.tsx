@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { Deck, DeckProgress, Settings } from "../types";
 import { itemMap, needsPractice, pool } from "../engine";
 import { Chip } from "./Bits";
+import { speak, speechSupported, useVoices } from "../speech";
 
 function Radios<T extends string | number>(props: {
   legend: string; name: string; value: T; options: { value: T; label: string }[]; onChange: (v: T) => void; hint?: string;
@@ -95,9 +96,44 @@ export function SettingsPanel(props: { deck: Deck; settings: Settings; onChange:
           <input type="checkbox" id="speak" checked={s.speak} onChange={e => set("speak", e.target.checked)} />
           Say the correct answer aloud after each guess
         </label>
+        <VoicePicker deck={deck} settings={s} onChange={onChange} />
         <p className="hint">Changes to modes, sets and round size apply when you press Start.</p>
       </div>
     </details>
+  );
+}
+
+const LANG_NAME: Record<string, string> = { ja: "Japanese", te: "Telugu" };
+
+function VoicePicker(props: { deck: Deck; settings: Settings; onChange: (s: Settings) => void }) {
+  const { deck, settings: s, onChange } = props;
+  const voices = useVoices(deck.lang);
+  const langName = LANG_NAME[deck.lang] ?? deck.name;
+  if (!speechSupported()) return <p className="hint">This browser can't speak aloud.</p>;
+  const chosen = s.voices[deck.lang] ?? "";
+  const sample = deck.items.find(x => !x.decoyOnly)?.speak;
+  return (
+    <div className="field">
+      <label htmlFor="voiceSel">{langName} voice</label>
+      {voices.length ? (
+        <div className="row">
+          <select id="voiceSel" value={chosen} onChange={e => onChange({ ...s, voices: { ...s.voices, [deck.lang]: e.target.value } })}>
+            <option value="">Best available ({voices[0].name})</option>
+            {voices.map(v => <option key={v.voiceURI} value={v.voiceURI}>{v.name}</option>)}
+          </select>
+          <button type="button" className="btn" onClick={() => speak(sample, deck.lang, chosen || undefined, s.speechRate)}>Test</button>
+        </div>
+      ) : (
+        <p className="hint">No {langName} voice is installed on this device or browser, so nothing will be spoken. See the note below on adding one.</p>
+      )}
+      <label htmlFor="speechRate">Speaking speed: {Math.round(s.speechRate * 100)}%</label>
+      <input type="range" id="speechRate" min={0.5} max={1.2} step={0.05} value={s.speechRate} onChange={e => onChange({ ...s, speechRate: +e.target.value })} />
+      <p className="hint">
+        Voices come from your device and browser. For better ones, install a {langName} voice in your system's
+        speech settings, or use Microsoft Edge, which has natural-sounding online voices. New voices appear in this list
+        after you reload the page.
+      </p>
+    </div>
   );
 }
 

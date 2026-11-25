@@ -26,6 +26,8 @@ export const DEFAULT_SETTINGS: Settings = {
   extra: 4,
   alike: true,
   speak: false,
+  voices: {},
+  speechRate: 0.8,
   decks: Object.fromEntries(DECKS.map(d => [d.id, { sets: d.defaultSets, modes: d.modes.map(m => m.id) }]))
 };
 

@@ -95,5 +95,8 @@ export interface Settings {
   extra: number;
   alike: boolean;
   speak: boolean;
+  /** Chosen voice per language ("ja", "te"), by voiceURI; missing means the best available. */
+  voices: Record<string, string>;
+  speechRate: number;
   decks: Record<string, DeckSettings>;
 }
