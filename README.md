@@ -24,6 +24,8 @@ It started as Kanji Shuffle and now covers:
 - Large, adjustable character and text sizes; several typefaces; light and dark themes;
   keyboard play (number keys pick on the left, letter keys on the right); optional spoken answers.
 - Progress is saved in your browser, separately for each writing system.
+- Add it to an iPhone or iPad home screen (Safari → Share → Add to Home Screen) for a mailbox icon
+  and a full-screen app.
 
 ## Development
 
@@ -41,6 +43,7 @@ npm run build   # type-check, then write index.html (and artifact/letterbox.html
   items and look-alike groups, then list it in `app/src/decks/index.ts`.
 - `app/src/engine.ts`: rounds, extras, look-alikes and spaced repetition, with no React.
 - `app/src/App.tsx` and `app/src/components/`: the screens.
+- `app/public/`: home-screen icons and the web app manifest, copied next to `index.html` on build.
 
 Commit the rebuilt `index.html` along with source changes so the live site updates.
 

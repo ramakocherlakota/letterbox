@@ -12,7 +12,7 @@ export default defineConfig({
   build: {
     outDir: fileURLToPath(new URL(".", import.meta.url)),
     emptyOutDir: false,
-    copyPublicDir: false
+    copyPublicDir: true
   },
   test: {
     root: fileURLToPath(new URL(".", import.meta.url)),
