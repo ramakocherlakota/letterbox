@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { Deck, DeckProgress, Item, Mode, Settings } from "./types";
 import { DECKS, DECK_BY_ID } from "./decks";
 import {
@@ -67,6 +67,10 @@ export default function App() {
   const [status, setStatus] = useState("");
   const [howtoOpen, setHowtoOpen] = useState(() => loadFlag("lb-howto-open", true));
   const readyAt = useRef(0);
+  // The result box above the board only ever grows, so the board below it never moves up and
+  // down between guesses. It starts tall enough for a wrong answer (see .latest in styles.css).
+  const latestRef = useRef<HTMLDivElement>(null);
+  const latestMax = useRef(0);
   const entryKey = useRef(0);
 
   const ds = settings.decks[deck.id];
@@ -218,7 +222,36 @@ export default function App() {
     return () => document.removeEventListener("keydown", h);
   }, []);
 
+  useLayoutEffect(() => {
+    latestMax.current = 0;
+    if (latestRef.current) latestRef.current.style.minHeight = "";
+  }, [settings.glyphSize, settings.textSize, deck.id]);
+  useLayoutEffect(() => {
+    const el = latestRef.current;
+    if (!el) return;
+    const h = el.getBoundingClientRect().height;
+    if (h > latestMax.current) latestMax.current = h;
+    el.style.minHeight = `${latestMax.current}px`;
+  });
+
   // ---- Render ----
+  function entryView(e: Entry, isNew: boolean) {
+    const d = deck.describe(byId[e.id]);
+    const m = deck.modes.find(x => x.id === e.mode)!;
+    return (
+      <div className={`entry${e.ok ? "" : " bad"}${isNew ? " new" : ""}`}>
+        <span className="mark" aria-hidden="true">{e.ok ? "✓" : "✗"}</span>
+        <span className="big" lang={deck.lang}>{d.big}</span>
+        <div className="txt">
+          <div className="m">{e.ok ? "Right" : "Missed"}: {d.title}</div>
+          {d.sub && <div className="sub" lang={deck.lang}>{d.sub}</div>}
+          {!e.ok && <div className="pick">{describePick(deck, m, byId[e.picked])}</div>}
+        </div>
+        {!e.ok && <button type="button" className="btn" onClick={() => startDrill(e.id, e.mode)}>Drill</button>}
+      </div>
+    );
+  }
+
   const r = game.round;
   const pField = deck.fields[mode.prompt];
   const cField = deck.fields[mode.choice];
@@ -273,6 +306,14 @@ export default function App() {
             </div>
           </div>
 
+          {/* The last answer sits right above the board, where you're looking. Its space is
+              reserved from the start so the board never jumps down under your finger. */}
+          <div className="latest" id="latest" ref={latestRef}>
+            {game.log[0]
+              ? <div key={game.log[0].key}>{entryView(game.log[0], true)}</div>
+              : <p className="latest-empty">Pick a word on the left, then its match on the right. Your result shows here.</p>}
+          </div>
+
           {game.done ? (
             <section className="summary" aria-live="polite">
               <h2>Round {r.num} complete</h2>
@@ -315,23 +356,7 @@ export default function App() {
             <h2 id="logHead">This round</h2>
             {game.log.length === 0 && <p className="empty">Your answers will appear here, newest first.</p>}
             <ol id="log">
-              {game.log.map((e, i) => {
-                const it = byId[e.id];
-                const d = deck.describe(it);
-                const m = deck.modes.find(x => x.id === e.mode)!;
-                return (
-                  <li key={e.key} className={`entry${e.ok ? "" : " bad"}${i === 0 ? " new" : ""}`}>
-                    <span className="mark" aria-hidden="true">{e.ok ? "✓" : "✗"}</span>
-                    <span className="big" lang={deck.lang}>{d.big}</span>
-                    <div className="txt">
-                      <div className="m">{e.ok ? "Right" : "Missed"}: {d.title}</div>
-                      {d.sub && <div className="sub" lang={deck.lang}>{d.sub}</div>}
-                      {!e.ok && <div className="pick">{describePick(deck, m, byId[e.picked])}</div>}
-                    </div>
-                    {!e.ok && <button type="button" className="btn" onClick={() => startDrill(e.id, e.mode)}>Drill</button>}
-                  </li>
-                );
-              })}
+              {game.log.map((e, i) => <li key={e.key}>{entryView(e, i === 0)}</li>)}
             </ol>
           </section>
         </>
